@@ -1,12 +1,12 @@
 ---
 title: "An algorithmic approach to determining wine quality from chemical data"
 author: "David Gold"
-date: "10th December 2019"
-output: word_document
-#output: 
-#  pdf_document: 
-#    keep_tex: yes
-#    latex_engine: xelatex
+date: "November 2019"
+
+output: 
+  pdf_document: 
+    keep_tex: yes
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}
@@ -15,17 +15,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-"Best Wines in the World" (BWITW) is a wine club that prides itself on being able to provide new quality wines to its members at reasonable prices.  It currently relies on testers to judge the quality of its wines which is a slow time consuming and expensive process.  Also, by the time that it has tested new wines the market is usually aware of them and the price rises.  It has commisioned this report to assess the viability of using chemical analysis to determine whether a wine is "quality" or not quickly and cheaply, so that it can get access to new quality wines before its competition.  The management of BWITW consider a wine to be "quality" if it receives a score of 7 out of 10 by a panel of its testers.  It is hoped that with the application of chemical analysis and data science, it would be able to quickly screen a large number of new and undiscovered wines, identify those that are "quality" and be able to offer these to its customers.
+"Best Wines in the World" (BWITW) is a wine club that prides itself on being able to provide new quality wines to its members at reasonable prices.  It currently relies on testers to judge the quality of its wines which is a slow, time consuming and expensive process.  Also, by the time that it has tested new wines the market is usually aware of them and the prices rise.  It has commissioned this report to assess the viability of using chemical analysis, combined with data science, to determine whether a wine is "quality" or not quickly and cheaply, so that it can get access to new, competively priced and quality wines before its competition.  The management of BWITW consider a wine to be "quality" if it receives a score of 7 out of 10 by a panel of testers.
 
-This report details analysis that has been done to determine whether this combination of chemical testing and data science approach would work and makes a judgement on suitability of this approach and possible next steps.
+This report details analysis that has been done to determine whether this combined approach of chemical testing and data science would work and makes a judgement on suitability of this approach and possible next steps.
 
-BWITW have been doing chemical testing on their red wines and recording this information along with a quality score given by its panel of testers.  The approach taken in this exercise was to first investigate the dataset to understand its structure and the variables within it, including some visualisations.  A very simple regression was performed to see what would be simply possible using very simple techniques.  After this a range of more sophisticated machine learning algorithms were applied to see whether this would lead to better results.  From these results conclusions have been drawn.
+BWITW have gained access to a dataset of the chemical properties of red wines and a quality score for each wine given by a panel of testers.  The approach taken in this paper was to first investigate the dataset to understand its structure and the variables within it, including some visualisations.  A very simple regression was performed to see what would be simply possible using very simple techniques.  After this a range of more sophisticated machine learning algorithms were applied to see whether this would lead to better results.  From these results conclusions have been drawn.
 
 NOTE: The data set used here is from https://archive.ics.uci.edu/ml/datasets/Wine+Quality and P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis, Modeling wine preferences by data mining from physicochemical properties, in Decision Support Systems, Elsevier, 47(4):547-553, 2009 is cited.
 
 ## Methods and Analysis
 
-The first step in the analysis was to ensure that neccesary packages and the dataset were downloaded.  The code for this is below.
+The first step in the analysis was to ensure that necessary packages and the dataset were downloaded.  The code for this is below.
 
 ```{r download packages and dataset, results="hide", message=FALSE, warning=FALSE}
 ## load packages that are required
@@ -90,7 +90,9 @@ data.frame(y) %>%
   knitr::kable()
 ```
 
-The dataset was split into a training set (80%) and a test set (20%) to start training models.
+There are a total of 217 quality wines in the dataset.
+
+The dataset was split into a training set (80%) and a test set (20%) before starting to train models.
 
 ```{r split the dataset}
 # Validation set will be 20% of the total dataset
@@ -102,7 +104,7 @@ y_training_set <- y[-test_index]
 y_test_set <- y[test_index]
 ```
 
-As a bit of further data analysis a test was done to check that the percentage of quality wines was roughly the same in both the training set and the test set.
+As a bit of further data analysis, a test was done to check that the percentage of quality wines was roughly the same in both the training set and the test set.
 
 ```{r check on quality percentage in test and training sets}
 # check the proportion of the wines that are quality in both the test set and the training set
@@ -113,7 +115,7 @@ mean(y_test_set == "quality")
 
 This shows that in both cases, the proportion of "quality" wines is around 14%.
 
-As an initial piece of the analysis the correlation coefficient between the various variables and the quality score for the wine were calculated.
+The next step was for an analysis of the correlation coefficients between the various variables and the quality scores for the wines.
 
 ```{r calculation of correlation coefficients}
 # lets now start with the simplest predictive model and see whether a simple correlation would
@@ -123,7 +125,7 @@ cor(wine_quality[1:11], wine_quality[12]) %>%
   knitr::kable()
 ```
 
-It can be seen from this that the alcohol content of the wine is the most correlated variable with the wine quality and hence this could be the basis for an intiail simple regression model.  However, the classification of a a wine into quality or not is categorical rather than continious and hence a relevant model needs to be applied here (and to more complicated models that are developed).
+It can be seen from this that the alcohol content of the wine is the most correlated variable with the wine quality and hence this could be the basis for an initial simple regression model.  However, the classification of a wine into "quality" or not is categorical rather than continuous and hence a relevant model needs to be applied here (and to more complicated models that are developed).
 
 The regression approach can be extended to categorical data. For example, we can try regression to estimate the conditional probability:
 
@@ -133,17 +135,18 @@ Once we have estimates $\beta_0$ and $\beta_1$, we can obtain an actual predicti
 
 We now need to define success for model.  There are several measures that will be used as part of a judgement on the best approach.  The accuracy will be looked at, as well as the sensitivity, specificity and the balance accuracy.  In the context of this exercise:
 
-* the accuracy represents the total proportion of wine samples that were correctly identified using that approach.
-* the sensitivity is the true positive rate and represents the proportion of quality wines that are correctly identified as such.
-* the specificity is the true negative rate and measures the proportion of non-quality wines identified as such.
-* the balance accuracy makes an adjustment for the fact that there are significantly less "quality" than "sub-quality" wines in the dataset and in effect normalises the results for this and hence shows the proportion of wines that would be correctly identified in a balanced dataset.
-* the positive predicted accuracy is the proportion of wines that are predicted to be "quality" that actually are.
-* the negative predicted accuracy is the proportion of wines that are predicted ot be "sub-quality" that actually are.
+* the **accuracy** represents the total proportion of wine samples that were correctly identified using that approach.
+* the **sensitivity** is the true positive rate and represents the proportion of quality wines that are correctly identified as such.
+* the **specificity** is the true negative rate and measures the proportion of non-quality wines identified as such.
+* the **balanced accuracy** makes an adjustment for the fact that there are significantly less "quality" than "sub-quality" wines in the dataset and in effect normalises the results for this and hence shows the proportion of wines that would be correctly identified in a balanced dataset.
+* the **positive predicted accuracy** is the proportion of wines that are predicted to be "quality" that actually are.
+* the **negative predicted accuracy** is the proportion of wines that are predicted to be "sub-quality" that actually are.
 
 The code below also creates a dataframe to store the results from the analysis.
 
 ```{r simple regression model on alcohol, results="hide", message=FALSE, warning=FALSE, tidy=TRUE}
-# of these variables, it appears that alcohol has the highest correlation with quality, so let's build a predicitive
+# of these variables, it appears that alcohol has the highest correlation with quality, 
+# so let's build a predictive model
 # based on this simple correlation
 
 lm_fit <- mutate(training_set, y = as.numeric(quality >= 7)) %>% lm(y ~ alcohol, data = .)
@@ -177,7 +180,7 @@ The simple regression model on alcohol gives a base against which to compare the
 * A Neural Network Model
 * An Ensemble Model which takes the average results of all the models above
 
-The code to generate these is shown below and note that it does take some time to run.  The first section in the code below removes the quality score from the dataset, so that this is not included in dataset as it is obviously highly correlated with the "quality" clasification that has been established.
+The code to generate these is shown below and note that it does take some time to run.  The first section in the code below removes the quality score from the dataset, so that this is not included in dataset as it is obviously highly correlated with the "quality" classification that has been established.
 
 ```{r all the regression models, results="hide", message=FALSE, warning=FALSE, tidy=TRUE}
 # Remove the quality value from the data table to ease the application of machine learning approaches
@@ -403,7 +406,7 @@ wine_results <- bind_rows(wine_results,
                                        confusionMatrix(nnet_preds, 
                                                        y_test_set)$byClass["Neg Pred Value"]))
 
-# finally include an ensemble model, which combines takes an average across all the models
+# finally include an ensemble model, which takes an average across all the models
 
 ensemble <- cbind(glm = glm_preds == "quality", lda = lda_preds == "quality", 
                   qda = qda_preds == "quality", 
@@ -439,7 +442,7 @@ wine_results <- bind_rows(wine_results,
 
 ## Results
 
-The final table of results can be see below.  This shows that the Random Forest model delivers the best results looking across all of the models.  It delivers the best results across all the measures defined above.
+The final table of results can be seen below.  This shows that the Random Forest model delivers the best results looking across all of the models.  It delivers the best results across all the measures defined above.
 
 ```{r results table}
 # print the results
@@ -448,11 +451,11 @@ wine_results %>%
   knitr::kable()
 ```
 
-The Random Forest model gets the correct results in 91% of cases in the test set.  It can correctly identify quality wines in 50% of cases and correctly identify sub-quality wines in 98% of them.  However, the most interesting figure here is probably the positive predicted value wich is 78%.  This represents that percentage of wines that are identifed as quality that actually are.  Whilst the approach discussed here would help to reduce the number of wines that need to be screened, the fact that around 1 in 5 wines identified as quality are not, would mean that human testers would probably still be required before wines could be sent to customers.
+The Random Forest model gets the correct results in 91% of cases in the test set.  It can correctly identify quality wines in 50% of cases and correctly identify sub-quality wines in 98% of them.  However, the most interesting figure here is probably the positive predicted value which is 78%.  This represents that percentage of wines that are identified as quality that actually are.  Whilst the approach discussed here would help to reduce the number of wines that need to be screened, the fact that around 1 in 5 wines identified as quality are not, would mean that human testers would probably still be required before wines could be sent to customers.
 
 ## Conclusion
 
-The Random Forest model combined with the chemical analysis should allow BWITW to quickly screen a wide number of wines to identify which of these are highly likely to be quality and meet their requirements.  However, they do need to be careful as some of those that are expected to be quality via this approach will not be and they need to assess the risk of sending these to their customers.
+The Random Forest model combined with the chemical analysis should allow BWITW to quickly screen a wide number of wines to identify which of these are highly likely (around a 4 in 5 chance) to be quality and meet their requirements.  However, they do need to be careful as some of those that are expected to be quality via this approach will not be and they need to assess the risk of sending these to their customers, probably combining an initial chemical screening/data science approach with human testers.
 
 ### Possibilities for further analysis
 

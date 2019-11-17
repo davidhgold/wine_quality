@@ -311,7 +311,7 @@ wine_results <- bind_rows(wine_results,
                                        confusionMatrix(nnet_preds, 
                                                        y_test_set)$byClass["Neg Pred Value"]))
 
-# finally include an ensemble model, which combines takes an average across all the models
+# finally include an ensemble model, which takes an average across all the models
 
 ensemble <- cbind(glm = glm_preds == "quality", lda = lda_preds == "quality", 
                   qda = qda_preds == "quality", 
